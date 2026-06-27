@@ -1,0 +1,13 @@
+# OmniScribe
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Runtime data (uploads, generated outputs, temp, downloaded models)
+data/
+models/
+
+# Environment
+.env
+.venv/
+venv/

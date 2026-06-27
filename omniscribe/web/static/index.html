@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OmniScribe — Reads. Listens. Teaches.</title>
+<style>
+  :root{
+    --indigo:#4f46e5; --indigo-dk:#3730a3; --pink:#ec4899; --sky:#0ea5e9;
+    --green:#10b981; --amber:#f59e0b; --red:#ef4444;
+    --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#f5f6fa; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',Tahoma,system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  a{color:var(--indigo)}
+  header{background:linear-gradient(120deg,var(--indigo),var(--pink));color:#fff;padding:26px 22px 60px}
+  .wrap{max-width:980px;margin:0 auto;padding:0 18px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .logo{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.18);
+        display:grid;place-items:center;font-size:24px;backdrop-filter:blur(4px)}
+  .brand h1{margin:0;font-size:26px;letter-spacing:.3px}
+  .brand p{margin:2px 0 0;opacity:.92;font-size:13.5px}
+  .caps{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .cap{font-size:12px;background:rgba(255,255,255,.16);padding:5px 11px;border-radius:20px;display:flex;gap:6px;align-items:center}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .dot.on{background:#34d399} .dot.off{background:#fca5a5}
+  main{max-width:980px;margin:-42px auto 60px;padding:0 18px}
+  .tabs{display:flex;gap:6px;background:var(--card);padding:7px;border-radius:14px;
+        box-shadow:0 6px 24px rgba(31,41,55,.10);overflow-x:auto}
+  .tab{flex:1;min-width:120px;border:0;background:transparent;padding:12px 10px;border-radius:10px;
+       font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;transition:.15s}
+  .tab:hover{background:#f3f4f6;color:var(--ink)}
+  .tab.active{background:linear-gradient(120deg,var(--indigo),var(--pink));color:#fff}
+  .panel{display:none;background:var(--card);margin-top:18px;border-radius:16px;
+         box-shadow:0 6px 24px rgba(31,41,55,.08);padding:22px}
+  .panel.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .panel h2{margin:0 0 4px;font-size:19px}
+  .panel .lead{margin:0 0 18px;color:var(--muted);font-size:14px}
+  .drop{border:2px dashed #c7cbe0;border-radius:14px;padding:26px;text-align:center;color:var(--muted);
+        cursor:pointer;transition:.15s;background:#fafbff}
+  .drop:hover,.drop.drag{border-color:var(--indigo);background:#eef0ff;color:var(--indigo)}
+  .drop b{color:var(--ink)}
+  .drop .file{margin-top:10px;font-size:13px;color:var(--indigo);font-weight:600;word-break:break-all}
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0}
+  label.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#374151}
+  select,input[type=text],textarea{border:1px solid var(--line);border-radius:9px;padding:9px 11px;font:inherit;background:#fff;color:var(--ink)}
+  textarea{min-height:150px;resize:vertical;width:100%}
+  .checks{display:flex;flex-wrap:wrap;gap:14px;margin:6px 0 18px}
+  .chk{display:flex;align-items:center;gap:7px;font-size:13.5px;color:#374151;font-weight:500}
+  .assets-pick{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 16px}
+  .pill{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:20px;
+        padding:7px 13px;font-size:13px;cursor:pointer;user-select:none}
+  .pill input{accent-color:var(--indigo)}
+  .btn{background:linear-gradient(120deg,var(--indigo),var(--pink));color:#fff;border:0;border-radius:11px;
+       padding:13px 22px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;box-shadow:0 4px 14px rgba(79,70,229,.3)}
+  .btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
+  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn.ghost{background:#eef0ff;color:var(--indigo);box-shadow:none}
+  .progress{margin-top:18px;display:none}
+  .progress.show{display:block}
+  .bar{height:10px;background:#eceefb;border-radius:8px;overflow:hidden}
+  .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--indigo),var(--pink));transition:width .3s}
+  .pmsg{font-size:13px;color:var(--muted);margin-top:8px}
+  .results{margin-top:20px;display:none}
+  .results.show{display:block}
+  .stat-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+  .stat{background:#f3f4f6;border-radius:10px;padding:9px 14px;font-size:13px}
+  .stat b{color:var(--indigo-dk);font-size:16px;display:block}
+  .textout{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:16px;max-height:340px;overflow:auto;
+           white-space:pre-wrap;font-size:13.5px;line-height:1.7;font-family:'Segoe UI',Tahoma,monospace}
+  .downloads{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .dl{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:10px;
+      padding:9px 14px;font-size:13px;font-weight:600;text-decoration:none;color:var(--ink);background:#fff;transition:.15s}
+  .dl:hover{border-color:var(--indigo);background:#eef0ff;color:var(--indigo)}
+  .asset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:14px}
+  .acard{border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center;transition:.15s;text-decoration:none;color:var(--ink);background:#fff}
+  .acard:hover{border-color:var(--indigo);box-shadow:0 6px 18px rgba(79,70,229,.15);transform:translateY(-2px)}
+  .acard .ic{font-size:30px} .acard .nm{font-weight:700;margin-top:8px;font-size:14px}
+  .acard .ty{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+  .note{font-size:12.5px;color:var(--muted);margin-top:10px}
+  .banner{border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:14px}
+  .banner.warn{background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
+  .banner.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+  .banner.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+  .modelrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
+  footer{text-align:center;color:var(--muted);font-size:12.5px;padding:24px}
+  .rtl{direction:rtl;text-align:right}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo">📜</div>
+      <div>
+        <h1>OmniScribe</h1>
+        <p>Reads · Listens · Teaches — OCR, transcription &amp; study-material generation in one tool</p>
+      </div>
+    </div>
+    <div class="caps" id="caps"></div>
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab active" data-tab="ocr">📄 OCR</button>
+    <button class="tab" data-tab="transcribe">🎙️ Transcribe</button>
+    <button class="tab" data-tab="dissect">🧠 Dissect</button>
+    <button class="tab" data-tab="pipeline">✨ Pipeline</button>
+  </div>
+
+  <!-- OCR -->
+  <section class="panel active" id="panel-ocr">
+    <h2>Extract text from PDFs &amp; images</h2>
+    <p class="lead">Arabic, English &amp; French. Digital PDFs use their text layer instantly; scans are OCR'd with Tesseract.</p>
+    <div class="drop" id="drop-ocr"><b>Drop a PDF or image here</b><br>or click to browse
+      <div class="file" id="file-ocr"></div>
+      <input type="file" id="input-ocr" accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.bmp,.webp,.gif" hidden></div>
+    <div class="opts">
+      <label class="field">Language<select id="ocr-lang"></select></label>
+      <label class="field">Quality<select id="ocr-preset"></select></label>
+      <label class="field">Pages <span style="font-weight:400;color:var(--muted)">(e.g. 1-5, blank=all)</span><input type="text" id="ocr-pages" placeholder="all"></label>
+    </div>
+    <div class="checks">
+      <label class="chk"><input type="checkbox" id="ocr-embed" checked> Use embedded text when present</label>
+      <label class="chk"><input type="checkbox" id="ocr-deskew"> Deskew</label>
+      <label class="chk"><input type="checkbox" id="ocr-denoise"> Denoise</label>
+      <label class="chk"><input type="checkbox" id="ocr-diac"> Remove Arabic diacritics</label>
+    </div>
+    <button class="btn" id="run-ocr" disabled>Extract text</button>
+    <div class="progress" id="prog-ocr"><div class="bar"><i></i></div><div class="pmsg"></div></div>
+    <div class="results" id="res-ocr"></div>
+  </section>
+
+  <!-- TRANSCRIBE -->
+  <section class="panel" id="panel-transcribe">
+    <h2>Transcribe speech to text</h2>
+    <p class="lead">Offline transcription with word-level timestamps. Exports TXT, SRT &amp; VTT subtitles.</p>
+    <div id="model-banner"></div>
+    <div class="drop" id="drop-tr"><b>Drop an audio file here</b><br>WAV, MP3, OGG, M4A, FLAC, OPUS, WEBM
+      <div class="file" id="file-tr"></div>
+      <input type="file" id="input-tr" accept=".wav,.mp3,.ogg,.oga,.opus,.m4a,.flac,.aac,.webm" hidden></div>
+    <div class="opts">
+      <label class="field">Language model<select id="tr-lang"></select></label>
+    </div>
+    <button class="btn" id="run-tr" disabled>Transcribe</button>
+    <div class="progress" id="prog-tr"><div class="bar"><i></i></div><div class="pmsg"></div></div>
+    <div class="results" id="res-tr"></div>
+  </section>
+
+  <!-- DISSECT -->
+  <section class="panel" id="panel-dissect">
+    <h2>Dissect information into study materials</h2>
+    <p class="lead">Paste text (or upload a .txt) and generate a guidebook, infographic, flashcards, quiz &amp; mindmap.</p>
+    <div id="llm-banner"></div>
+    <textarea id="dis-text" placeholder="Paste a transcript, article, notes, or any text to turn into study materials…"></textarea>
+    <div class="drop" id="drop-dis" style="margin-top:12px;padding:16px">…or drop a <b>.txt</b> file
+      <div class="file" id="file-dis"></div>
+      <input type="file" id="input-dis" accept=".txt,.md" hidden></div>
+    <p class="lead" style="margin:16px 0 6px">Assets to generate</p>
+    <div class="assets-pick" id="dis-assets"></div>
+    <label class="chk" style="margin-bottom:16px"><input type="checkbox" id="dis-llm"> Use AI extraction <span style="font-weight:400;color:var(--muted)">(richer, slower; off = instant offline)</span></label>
+    <br><button class="btn" id="run-dis">Generate study materials</button>
+    <div class="progress" id="prog-dis"><div class="bar"><i></i></div><div class="pmsg"></div></div>
+    <div class="results" id="res-dis"></div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="panel" id="panel-pipeline">
+    <h2>End-to-end pipeline ✨</h2>
+    <p class="lead">Drop a scanned PDF, image, or voice recording — OmniScribe reads/listens, then builds a full set of study materials automatically.</p>
+    <div class="drop" id="drop-pl"><b>Drop a document or audio file</b><br>PDF · image · audio — anything
+      <div class="file" id="file-pl"></div>
+      <input type="file" id="input-pl" hidden></div>
+    <div class="opts">
+      <label class="field">OCR language<select id="pl-ocrlang"></select></label>
+      <label class="field">OCR quality<select id="pl-preset"></select></label>
+      <label class="field">Audio language<select id="pl-stt"></select></label>
+    </div>
+    <p class="lead" style="margin:6px 0">Assets to generate</p>
+    <div class="assets-pick" id="pl-assets"></div>
+    <label class="chk" style="margin-bottom:16px"><input type="checkbox" id="pl-llm"> Use AI extraction <span style="font-weight:400;color:var(--muted)">(richer, slower; off = instant offline)</span></label>
+    <br><button class="btn" id="run-pl" disabled>Run full pipeline</button>
+    <div class="progress" id="prog-pl"><div class="bar"><i></i></div><div class="pmsg"></div></div>
+    <div class="results" id="res-pl"></div>
+  </section>
+</main>
+
+<footer>OmniScribe v1.0 · runs locally · Tesseract OCR · Vosk speech · ReportLab assets</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const ASSET_ICONS = {guidebook:"📘",infographic:"📊",flashcards:"🎴",quiz:"❓",mindmap:"🧠"};
+let CFG=null, CAPS=null;
+
+function hasArabic(t){return /[؀-ۿ]/.test(t||"");}
+
+async function boot(){
+  CFG = await (await fetch("/api/config")).json();
+  CAPS = await (await fetch("/api/capabilities")).json();
+  renderCaps();
+  fillSelect("#ocr-lang", CFG.ocr_languages, CFG.default_ocr_lang);
+  fillSelect("#pl-ocrlang", CFG.ocr_languages, CFG.default_ocr_lang);
+  fillPresets("#ocr-preset"); fillPresets("#pl-preset");
+  fillModels("#tr-lang"); fillModels("#pl-stt");
+  renderAssets("#dis-assets","dis"); renderAssets("#pl-assets","pl");
+  renderModelBanner(); renderLlmBanner();
+  // default the AI toggles to whatever is available (keyless free provider counts)
+  $("#dis-llm").checked = CAPS.dissect.llm.available;
+  $("#pl-llm").checked = CAPS.dissect.llm.available;
+}
+function fillSelect(sel,obj,def){
+  const e=$(sel); e.innerHTML="";
+  for(const [k,v] of Object.entries(obj)){const o=document.createElement("option");o.value=k;o.textContent=v;if(k===def)o.selected=true;e.appendChild(o);}
+}
+function fillPresets(sel){
+  const e=$(sel); e.innerHTML="";
+  for(const [k,v] of Object.entries(CFG.ocr_presets)){const o=document.createElement("option");o.value=k;o.textContent=k[0].toUpperCase()+k.slice(1)+" — "+v.desc;if(k===CFG.default_ocr_preset)o.selected=true;e.appendChild(o);}
+}
+function fillModels(sel){
+  const e=$(sel); e.innerHTML="";
+  for(const [k,m] of Object.entries(CFG.stt_models)){const o=document.createElement("option");o.value=k;o.textContent=m.label+(m.installed?" ✓":" (download)");if(k===CFG.default_stt_lang)o.selected=true;e.appendChild(o);}
+}
+function renderAssets(sel,prefix){
+  const e=$(sel); e.innerHTML="";
+  for(const a of CFG.assets){
+    const l=document.createElement("label");l.className="pill";
+    l.innerHTML=`<input type="checkbox" value="${a}" checked> ${ASSET_ICONS[a]||""} ${a}`;
+    e.appendChild(l);
+  }
+}
+function pickedAssets(sel){return [...document.querySelectorAll(sel+" input:checked")].map(i=>i.value);}
+
+function renderCaps(){
+  const c=$("#caps"); c.innerHTML="";
+  const items=[
+    ["OCR", CAPS.ocr.available],
+    ["Transcribe", CAPS.transcribe.available],
+    ["Dissect", CAPS.dissect.available],
+    ["AI (LLM)", CAPS.dissect.llm.available],
+  ];
+  for(const [name,on] of items){
+    const d=document.createElement("div");d.className="cap";
+    d.innerHTML=`<span class="dot ${on?'on':'off'}"></span>${name}`;
+    c.appendChild(d);
+  }
+}
+function renderModelBanner(){
+  const installed=Object.values(CFG.stt_models).some(m=>m.installed);
+  const b=$("#model-banner");
+  if(!CAPS.transcribe.available){b.innerHTML=`<div class="banner err">Transcription engine unavailable: ${CAPS.transcribe.vosk.reason||CAPS.transcribe.ffmpeg.reason||""}</div>`;return;}
+  if(!installed){b.innerHTML=`<div class="banner info">No speech model installed yet — the first transcription will download one automatically (~40&nbsp;MB).</div>`;}
+  else b.innerHTML="";
+}
+function renderLlmBanner(){
+  const b=$("#llm-banner");
+  const llm=CAPS.dissect.llm;
+  if(llm.available){
+    const others = llm.providers.length>1 ? ` (+${llm.providers.length-1} more as fallback)` : "";
+    b.innerHTML=`<div class="banner info">AI extraction is <b>on</b> via <b>${llm.primary}</b> · ${llm.model}${others}. No key needed — the free provider works out of the box. Add GEMINI_API_KEY / GROQ_API_KEY for higher quality.</div>`;
+  } else {
+    b.innerHTML=`<div class="banner warn">No AI provider reachable (${llm.reason}). Using the built-in offline engine — still produces all assets.</div>`;
+  }
+}
+
+// ---- drag & drop wiring ----
+function wireDrop(dropSel, inputSel, fileSel, onPick){
+  const drop=$(dropSel), input=$(inputSel), file=$(fileSel);
+  drop.addEventListener("click",()=>input.click());
+  drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("drag");});
+  drop.addEventListener("dragleave",()=>drop.classList.remove("drag"));
+  drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("drag");if(e.dataTransfer.files.length){input.files=e.dataTransfer.files;pick();}});
+  input.addEventListener("change",pick);
+  function pick(){const f=input.files[0];file.textContent=f?("📎 "+f.name):"";onPick(f);}
+}
+
+// ---- job polling ----
+async function runJob(url, formData, progEl, onDone){
+  const bar=progEl.querySelector("i"), msg=progEl.querySelector(".pmsg");
+  progEl.classList.add("show"); bar.style.width="3%"; msg.textContent="Starting…";
+  let res;
+  try{ res=await fetch(url,{method:"POST",body:formData}); }
+  catch(e){ msg.textContent="Network error"; return; }
+  if(!res.ok){ const t=await res.text(); msg.textContent="Error: "+t; return; }
+  const {job_id}=await res.json();
+  while(true){
+    await new Promise(r=>setTimeout(r,650));
+    const j=await (await fetch("/api/job/"+job_id)).json();
+    bar.style.width=Math.max(3,j.progress*100)+"%";
+    msg.textContent=j.message||j.status;
+    if(j.status==="done"){bar.style.width="100%";onDone(j.result);return;}
+    if(j.status==="error"){msg.textContent="✗ "+(j.error||"failed");return;}
+  }
+}
+
+function dlList(files){
+  if(!files||!Object.keys(files).length)return"";
+  return `<div class="downloads">`+Object.entries(files).map(([k,n])=>
+    `<a class="dl" href="/download/${encodeURIComponent(n)}" download>⬇ ${k.toUpperCase()}</a>`).join("")+`</div>`;
+}
+function assetGrid(files){
+  if(!files||!Object.keys(files).length)return"";
+  return `<div class="asset-grid">`+Object.entries(files).map(([k,n])=>{
+    const ext=n.split(".").pop().toUpperCase();
+    return `<a class="acard" href="/download/${encodeURIComponent(n)}" target="_blank">
+      <div class="ic">${ASSET_ICONS[k]||"📄"}</div><div class="nm">${k}</div><div class="ty">${ext}</div></a>`;
+  }).join("")+`</div>`;
+}
+function statRow(stats){
+  return `<div class="stat-row">`+Object.entries(stats).map(([k,v])=>
+    `<div class="stat"><b>${v}</b>${k.replace(/_/g," ")}</div>`).join("")+`</div>`;
+}
+
+// ===================== OCR =====================
+let fileOCR=null;
+wireDrop("#drop-ocr","#input-ocr","#file-ocr",f=>{fileOCR=f;$("#run-ocr").disabled=!f;});
+$("#run-ocr").onclick=()=>{
+  const fd=new FormData();
+  fd.append("file",fileOCR);
+  fd.append("lang",$("#ocr-lang").value);
+  fd.append("preset",$("#ocr-preset").value);
+  fd.append("page_range",$("#ocr-pages").value);
+  fd.append("prefer_embedded",$("#ocr-embed").checked);
+  fd.append("deskew",$("#ocr-deskew").checked);
+  fd.append("denoise",$("#ocr-denoise").checked);
+  fd.append("remove_diacritics",$("#ocr-diac").checked);
+  $("#run-ocr").disabled=true;
+  runJob("/api/ocr",fd,$("#prog-ocr"),r=>{
+    $("#run-ocr").disabled=false;
+    const rtl=hasArabic(r.text)?"rtl":"";
+    $("#res-ocr").className="results show";
+    $("#res-ocr").innerHTML=
+      statRow({pages:r.page_count,words:r.stats.words,characters:r.stats.characters,seconds:r.seconds,engine:r.engine})+
+      `<div class="textout ${rtl}">${escapeHtml(r.text)||"(no text found)"}</div>`+dlList(r.files);
+  });
+};
+
+// ================== TRANSCRIBE ==================
+let fileTR=null;
+wireDrop("#drop-tr","#input-tr","#file-tr",f=>{fileTR=f;$("#run-tr").disabled=!f;});
+$("#run-tr").onclick=()=>{
+  const fd=new FormData();fd.append("file",fileTR);fd.append("lang",$("#tr-lang").value);
+  $("#run-tr").disabled=true;
+  runJob("/api/transcribe",fd,$("#prog-tr"),r=>{
+    $("#run-tr").disabled=false;
+    const segs=(r.segments||[]).map(s=>`<div><span style="color:#94a3b8">[${s.start.toFixed(1)}s]</span> ${escapeHtml(s.text)}</div>`).join("");
+    $("#res-tr").className="results show";
+    $("#res-tr").innerHTML=
+      statRow({words:r.word_count,duration:r.duration+"s",seconds:r.seconds,language:r.lang})+
+      `<div class="textout">${segs||escapeHtml(r.text)||"(no speech detected)"}</div>`+dlList(r.files);
+  });
+};
+
+// ==================== DISSECT ====================
+let fileDIS=null;
+wireDrop("#drop-dis","#input-dis","#file-dis",f=>{fileDIS=f;});
+$("#run-dis").onclick=()=>{
+  const text=$("#dis-text").value.trim();
+  if(!text && !fileDIS){alert("Paste text or drop a .txt file first.");return;}
+  const fd=new FormData();
+  if(fileDIS) fd.append("file",fileDIS); else fd.append("text",text);
+  fd.append("assets",pickedAssets("#dis-assets").join(","));
+  fd.append("use_llm",$("#dis-llm").checked);
+  $("#run-dis").disabled=true;
+  runJob("/api/dissect",fd,$("#prog-dis"),r=>{
+    $("#run-dis").disabled=false;
+    renderDissect($("#res-dis"),r);
+  });
+};
+function renderDissect(el,r){
+  el.className="results show";
+  const p=r.preview||{};
+  const c=p.counts||{};
+  const isHeur = !r.method || r.method.startsWith("heuristic");
+  const method = isHeur ? "offline engine" : ("AI · " + r.method);
+  let warn = r.llm_error ? `<div class="banner warn">AI call failed (${escapeHtml(r.llm_error)}). Used the offline engine.</div>`:"";
+  el.innerHTML = warn+
+    `<div class="banner info">Generated via <b>${method}</b> in ${r.seconds}s — ${p.title?escapeHtml(p.title):""}</div>`+
+    statRow({concepts:c.concepts||0,flashcards:c.flashcards||0,quiz:c.quiz||0,branches:c.mindmap_branches||0})+
+    assetGrid(r.files);
+}
+
+// ==================== PIPELINE ====================
+let filePL=null;
+wireDrop("#drop-pl","#input-pl","#file-pl",f=>{filePL=f;$("#run-pl").disabled=!f;});
+$("#run-pl").onclick=()=>{
+  const fd=new FormData();
+  fd.append("file",filePL);
+  fd.append("ocr_lang",$("#pl-ocrlang").value);
+  fd.append("ocr_preset",$("#pl-preset").value);
+  fd.append("stt_lang",$("#pl-stt").value);
+  fd.append("assets",pickedAssets("#pl-assets").join(","));
+  fd.append("use_llm",$("#pl-llm").checked);
+  $("#run-pl").disabled=true;
+  runJob("/api/pipeline",fd,$("#prog-pl"),r=>{
+    $("#run-pl").disabled=false;
+    const el=$("#res-pl"); el.className="results show";
+    let html="";
+    if(r.warning) html+=`<div class="banner warn">${escapeHtml(r.warning)}</div>`;
+    const st=r.stage||{};
+    const label=r.stage_kind==="ocr"?"📄 Extracted text":"🎙️ Transcript";
+    const rtl=hasArabic(st.text)?"rtl":"";
+    html+=`<h3 style="margin:6px 0">${label}</h3>`;
+    html+=`<div class="textout ${rtl}" style="max-height:200px">${escapeHtml(st.text||"")||"(none)"}</div>`+dlList(st.files);
+    if(r.dissect){html+=`<h3 style="margin:18px 0 6px">🧠 Study materials</h3>`;
+      const tmp=document.createElement("div");renderDissect(tmp,r.dissect);html+=tmp.innerHTML;}
+    el.innerHTML=html;
+  });
+};
+
+function escapeHtml(s){return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+
+// ---- tabs ----
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  $("#panel-"+t.dataset.tab).classList.add("active");
+});
+
+boot();
+</script>
+</body>
+</html>
