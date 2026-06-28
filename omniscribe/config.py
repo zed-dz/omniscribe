@@ -117,19 +117,31 @@ POLLINATIONS_MODEL = os.environ.get("POLLINATIONS_MODEL", "openai")
 
 # --------------------------------------------------------------------------- fonts
 # An Arabic-capable TTF is required so generated PDFs/PNGs shape Arabic correctly.
+# We search system fonts first (so local keeps its native look) and fall back to the
+# bundled fonts/ dir (Amiri — covers Latin + Arabic) which ships with the repo and is the
+# only option in serverless/Linux hosts without system fonts.
+FONTS_DIR = ROOT_DIR / "fonts"
+
+
 def _find_font(*candidates: str) -> str | None:
-    search = [Path(r"C:\Windows\Fonts"), Path("/usr/share/fonts"), Path("/Library/Fonts")]
+    search = [Path(r"C:\Windows\Fonts"), Path("/usr/share/fonts"),
+              Path("/Library/Fonts"), FONTS_DIR]
     for name in candidates:
         for base in search:
             p = base / name
             if p.exists():
                 return str(p)
+        # also recurse one level into /usr/share/fonts/** for Linux distros
+        if name and Path("/usr/share/fonts").exists():
+            hits = list(Path("/usr/share/fonts").glob(f"**/{name}"))
+            if hits:
+                return str(hits[0])
     return None
 
 
-FONT_REGULAR = _find_font("arial.ttf", "DejaVuSans.ttf", "tahoma.ttf") or ""
-FONT_BOLD = _find_font("arialbd.ttf", "DejaVuSans-Bold.ttf", "tahomabd.ttf") or FONT_REGULAR
-FONT_ARABIC = _find_font("tahoma.ttf", "arial.ttf", "DejaVuSans.ttf") or FONT_REGULAR
+FONT_REGULAR = _find_font("arial.ttf", "DejaVuSans.ttf", "tahoma.ttf", "Amiri-Regular.ttf") or ""
+FONT_BOLD = _find_font("arialbd.ttf", "DejaVuSans-Bold.ttf", "tahomabd.ttf", "Amiri-Bold.ttf") or FONT_REGULAR
+FONT_ARABIC = _find_font("tahoma.ttf", "arial.ttf", "Amiri-Regular.ttf", "DejaVuSans.ttf") or FONT_REGULAR
 
 # --------------------------------------------------------------------------- Arabic
 # Unicode normalisation map for common OCR confusions (alef/yaa/kaf variants, etc.).

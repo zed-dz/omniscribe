@@ -1,0 +1,16 @@
+# Keep the serverless bundle tiny — exclude everything the cloud function doesn't import.
+data/
+models/
+tests/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+requirements-full.txt
+pytest.ini
+# Desktop-only modules (need Tesseract/Vosk/ffmpeg; not used by the cloud function)
+omniscribe/ocr/
+omniscribe/transcribe/
+omniscribe/web/
+omniscribe/services.py

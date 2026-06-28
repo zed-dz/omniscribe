@@ -11,13 +11,18 @@ One world-class tool that unifies three jobs that used to live in three separate
 
 A modern web UI **and** a unified CLI. Everything runs **locally** and **fast** — no GPU required.
 
+> ### 🌐 Live demo: **<https://omniscribe-cloud.vercel.app>**
+> The hosted "Cloud" edition runs the **Dissect** engine (text or a digital PDF → study
+> materials) with free, keyless AI. OCR-of-scans and audio transcription need system binaries
+> (Tesseract/Vosk/ffmpeg) and run in the **full local app** below.
+
 ---
 
-## Quick start
+## Quick start (full local app — OCR + speech + study materials)
 
 ```bash
 cd OmniScribe
-pip install -r requirements.txt          # Python deps (Tesseract must be installed separately)
+pip install -r requirements-full.txt     # full deps (Tesseract must be installed separately)
 python run.py                            # launches the web app and opens your browser
 ```
 

@@ -11,3 +11,5 @@ models/
 .env
 .venv/
 venv/
+
+.vercel

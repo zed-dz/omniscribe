@@ -1,0 +1,28 @@
+# OmniScribe — FULL local install (all features: OCR + speech + study materials)
+#   pip install -r requirements-full.txt
+#
+# Web
+fastapi>=0.110
+uvicorn>=0.27
+python-multipart>=0.0.9
+# OCR
+pymupdf>=1.24
+pytesseract>=0.3.10
+pillow>=10
+numpy>=1.26
+# Transcription
+vosk>=0.3.45
+imageio-ffmpeg>=0.4.9
+# Dissection / assets
+reportlab>=4.0
+arabic-reshaper>=3.0
+python-bidi>=0.4
+pypdf>=4.0
+# (LLM providers use plain HTTP; anthropic SDK optional)
+anthropic>=0.40
+#
+# External (not pip): Tesseract OCR engine must be installed separately
+#   Windows: https://github.com/UB-Mannheim/tesseract/wiki  (with ara/eng/fra language data)
+#   ffmpeg is provided automatically by the imageio-ffmpeg wheel above.
+#
+# Dev/testing (optional): pytest, httpx
