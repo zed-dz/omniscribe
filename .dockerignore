@@ -1,0 +1,11 @@
+.git/
+.vercel/
+data/
+models/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+api/
+vercel.json
+.vercelignore
