@@ -1,27 +1,39 @@
-# 📜 OmniScribe — *Reads. Listens. Teaches.*
+# OmniScribe
 
-One world-class tool that unifies three jobs that used to live in three separate folders:
+**Turn a scan, a PDF or a voice note into text, flashcards, a quiz and a summary.**
 
-| Engine | What it does | Built from |
-|--------|--------------|-----------|
-| 📄 **OCR** *(Reads)* | Extract text from PDFs & images — **Arabic, English, French** | *Arabic OCR* + *Project OCR* |
-| 🎙️ **Transcribe** *(Listens)* | Convert speech audio to text, **offline**, with timestamps & subtitles | *Text to speech (ogg)* |
-| 🧠 **Dissect** *(Teaches)* | Turn any text into a **guidebook, infographic, flashcards, quiz & mindmap** | *Tool to disect information* |
-| ✨ **Pipeline** | Chains them: a scanned PDF or a voice note → full set of study materials | — |
+**[Try it in your browser](https://omniscribe-cloud.vercel.app)**. Paste text or add a digital PDF. Scans and audio need the full app on your PC, below.
 
-A modern web UI **and** a unified CLI. Everything runs **locally** and **fast** — no GPU required.
+## Who it is for
 
-> ### 🌐 Live demo: **<https://omniscribe-cloud.vercel.app>**
-> The hosted "Cloud" edition runs the **Dissect** engine (text or a digital PDF → study
-> materials) with free, keyless AI. OCR-of-scans and audio transcription need system binaries
-> (Tesseract/Vosk/ffmpeg) and run in the **full local app** below.
+- Students with scanned pages and recorded lessons.
+- Teachers who want a quiz and flashcards from their own notes.
+- Anyone who works in Arabic, English or French.
+
+## What it does
+
+| Part | What you give it | What you get |
+|---|---|---|
+| **OCR** | PDF or image in Arabic, English or French | Text, as TXT, JSON, CSV, Markdown or HTML |
+| **Transcribe** | Speech audio | Text with times, and SRT or VTT subtitles |
+| **Dissect** | Any text | Guidebook, infographic, flashcards, quiz, mind map |
+| **Pipeline** | A scan or a voice note | All of the above in one go |
+
+It has a web page and a command line. No GPU needed.
+
+## Privacy
+
+- OCR and speech run on your PC. A speech model is downloaded the first time.
+- **Dissect with AI sends your text out.** With no key it uses Pollinations, a free online service. To stay offline, untick **Use AI**, pass `--no-llm`, or set `OMNISCRIBE_POLLINATIONS=0`.
+- The hosted demo runs on Vercel. Do not paste private text there.
 
 ---
 
 ## Quick start (full local app — OCR + speech + study materials)
 
 ```bash
-cd OmniScribe
+git clone https://github.com/zed-dz/omniscribe
+cd omniscribe
 pip install -r requirements-full.txt     # full deps (Tesseract must be installed separately)
 python run.py                            # launches the web app and opens your browser
 ```
@@ -96,7 +108,7 @@ omniscribe/
     static/index.html  the single-page UI (no build step, no CDN)
 run.py               launcher (server + browser)
 cli.py               unified command line
-tests/               32 tests incl. real OCR, real speech, full web stack
+tests/               38 tests incl. real OCR, real speech, full web stack
 ```
 
 ### Design principles
@@ -157,3 +169,10 @@ stack including the chained pipeline and download-path security.
 ---
 
 *OmniScribe v1.0 · runs locally · Tesseract OCR · Vosk speech · ReportLab assets · FastAPI*
+
+## Licence
+
+[MIT](LICENSE) for the code in this repo. The Amiri fonts are under the [SIL Open Font License](fonts/OFL.txt).
+The full install also pulls in PyMuPDF, which is AGPL. Read [THIRD_PARTY.md](THIRD_PARTY.md) before you host or sell a copy.
+
+Made by Amine Hammou. More tools: https://aminehammou.vercel.app/tools.html
